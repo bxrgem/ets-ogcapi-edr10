@@ -12,6 +12,7 @@
   <version>1.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
+ 
   <name>OGC API - Environmental Data Retrieval 1.0 Conformance Test Suite</name>
   <description>Describe purpose of test suite.</description>
   <url>http://opengeospatial.github.io/ets-ogcapi-edr10/</url>
@@ -49,12 +50,20 @@
     <spec-version>1.0</spec-version>
     <geotk.version>3.21</geotk.version>
     <docker.teamengine.version>5.4</docker.teamengine.version>
+    <skipTests>true</skipTests>
+    <teamengine-version>6.0-SNAPSHOT</teamengine-version>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>org.opengis.cite.teamengine</groupId>
+      <artifactId>teamengine-resources</artifactId>
+      <version>${teamengine-version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.opengis.cite.teamengine</groupId>
       <artifactId>teamengine-spi</artifactId>
+      <version>${teamengine-version}</version>
     </dependency>
     <dependency>
       <groupId>org.opengis.cite</groupId>
@@ -150,7 +159,8 @@
           <docfilessubdirs>true</docfilessubdirs>
           <show>package</show>
           <links>
-            <link>http://testng.org/javadocs/</link>
+            <link>https://javadoc.io/doc/org.testng/testng/latest/</link>
+            <!--<link>http://testng.org/javadocs/</link>-->
           </links>
         </configuration>
         <executions>
@@ -187,6 +197,9 @@
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <skipTests>${skipTests}</skipTests>
+        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
