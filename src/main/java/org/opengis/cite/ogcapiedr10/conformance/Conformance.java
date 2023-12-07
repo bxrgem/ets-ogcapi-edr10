@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 import org.opengis.cite.ogcapiedr10.CommonFixture;
 import org.opengis.cite.ogcapiedr10.openapi3.TestPoint;
 import org.opengis.cite.ogcapiedr10.openapi3.UriBuilder;
@@ -42,28 +41,27 @@ public class Conformance extends CommonFixture {
     private List<RequirementClass> requirementClasses;
 
     @DataProvider(name = "conformanceUris")
-    public Object[][] conformanceUris( ITestContext testContext ) {
-        OpenApi3 apiModel = (OpenApi3) testContext.getSuite().getAttribute( API_MODEL.getName() );
-        URI iut = (URI) testContext.getSuite().getAttribute( IUT.getName() );
+    public Object[][] conformanceUris(ITestContext testContext) {
+        OpenApi3 apiModel = (OpenApi3) testContext.getSuite().getAttribute(API_MODEL.getName());
+        URI iut = (URI) testContext.getSuite().getAttribute(IUT.getName());
 
-        TestPoint tp = new TestPoint(rootUri.toString(),"/conformance",null);
-
+        TestPoint tp = new TestPoint(rootUri.toString(), "/conformance", null);
 
         List<TestPoint> testPoints = new ArrayList<TestPoint>();
         testPoints.add(tp);
         Object[][] testPointsData = new Object[1][];
         int i = 0;
-        for ( TestPoint testPoint : testPoints ) {
+        for (TestPoint testPoint : testPoints) {
             testPointsData[i++] = new Object[] { testPoint };
         }
         return testPointsData;
     }
 
     @AfterClass
-    public void storeRequirementClassesInTestContext( ITestContext testContext ) {
-        testContext.getSuite().setAttribute( REQUIREMENTCLASSES.getName(), this.requirementClasses );
+    public void storeRequirementClassesInTestContext(ITestContext testContext) {
+        testContext.getSuite().setAttribute(REQUIREMENTCLASSES.getName(), this.requirementClasses);
     }
-    
+
     /**
      * <pre>
      * Abstract Test 1: Validate that the resource paths advertised through the API conform with HTTP 1.1 and, where approprate, TLS.
@@ -71,74 +69,72 @@ public class Conformance extends CommonFixture {
      */
     @Test(description = "Implements Abstract Test 1 and Requirement /req/core/http")
     public void http() {
-        Response response = init().baseUri( rootUri.toString() ).when().request( GET, "/" );
-        response.then().statusLine( containsString( "HTTP/1.1" ) );
-    }    
+        Response response = init().baseUri(rootUri.toString()).when().request(GET, "/");
+        response.then().statusLine(containsString("HTTP/1.1"));
+    }
 
     /**
-     * Abstract Test 6: Validate that a Conformance Declaration can be retrieved from the expected location.
-     * Abstract Test 7: Validate that the Conformance Declaration response complies with the required structure and contents.
+     * Abstract Test 6: Validate that a Conformance Declaration can be retrieved
+     * from the expected location.
+     * Abstract Test 7: Validate that the Conformance Declaration response complies
+     * with the required structure and contents.
      *
      * @param testPoint
-     *            the test point to test, never <code>null</code>
+     *                  the test point to test, never <code>null</code>
      */
     @Test(description = "Implements Abstract Test 6 (/conf/core/conformance) and Abstract Test 7 (/conf/core/conformance-success)", groups = "conformance", dataProvider = "conformanceUris")
-    public void validateConformanceOperationAndResponse( TestPoint testPoint ) {
+    public void validateConformanceOperationAndResponse(TestPoint testPoint) {
 
-    	String f = "";
-    	if(rootUri.toString().contains("f=json") || rootUri.toString().contains("f=application/json")) {}
-    	else { 
-    		//f = "f=application/json&f=json"; 
-    		 f = "f=json"; 
-    		}    	
-    	
-        String testPointUri = new UriBuilder( testPoint ).buildUrl();
-   
-        Response response = init().baseUri( testPointUri ).accept( JSON ).when().request( GET ,"?"+f);
-        validateConformanceOperationResponse( testPointUri, response );
+        String f = "";
+        if (rootUri.toString().contains("f=json") || rootUri.toString().contains("f=application/json")) {
+        } else {
+            // f = "f=application/json&f=json";
+            f = "f=json";
+        }
+
+        String testPointUri = new UriBuilder(testPoint).buildUrl();
+        Response response = init().baseUri(testPointUri).accept(JSON).when().request(GET, "?" + f);
+        validateConformanceOperationResponse(testPointUri, response);
     }
 
     /**
      * private method to support Abstract Test 6 and Abstract Test 7
      *
      */
-    private void validateConformanceOperationResponse( String testPointUri, Response response ) {
-        response.then().statusCode( 200 );
+    private void validateConformanceOperationResponse(String testPointUri, Response response) {
+        response.then().statusCode(200);
 
         JsonPath jsonPath = response.jsonPath();
-        this.requirementClasses = parseAndValidateRequirementClasses( jsonPath );
-        assertTrue( this.requirementClasses.contains( CORE ),
-                    "Requirement class \"http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core\" is not available from path "
-                                                              + testPointUri );
+        this.requirementClasses = parseAndValidateRequirementClasses(jsonPath);
+        assertTrue(this.requirementClasses.contains(CORE),
+                "Requirement class \"http://www.opengis.net/spec/ogcapi-edr-1/1.0/conf/core\" is not available from path "
+                        + testPointUri);
     }
 
     /**
      * @param jsonPath
-     *            never <code>null</code>
+     *                 never <code>null</code>
      * @return the parsed requirement classes, never <code>null</code>
      * @throws AssertionError
-     *             if the json does not follow the expected structure
+     *                        if the json does not follow the expected structure
      */
-    List<RequirementClass> parseAndValidateRequirementClasses( JsonPath jsonPath ) {
-        List<Object> conformsTo = jsonPath.getList( "conformsTo" );
-        assertNotNull( conformsTo, "Missing member 'conformsTo'." );
+    List<RequirementClass> parseAndValidateRequirementClasses(JsonPath jsonPath) {
+        List<Object> conformsTo = jsonPath.getList("conformsTo");
+        assertNotNull(conformsTo, "Missing member 'conformsTo'.");
 
         List<RequirementClass> requirementClasses = new ArrayList<>();
-        for ( Object conformTo : conformsTo ) {
-   
-            if ( conformTo instanceof String ) {
+        for (Object conformTo : conformsTo) {
+
+            if (conformTo instanceof String) {
                 String conformanceClass = (String) conformTo;
-                RequirementClass requirementClass = RequirementClass.byConformanceClass( conformanceClass );
-                if ( requirementClass != null )
-                    requirementClasses.add( requirementClass );
+                RequirementClass requirementClass = RequirementClass.byConformanceClass(conformanceClass);
+                if (requirementClass != null)
+                    requirementClasses.add(requirementClass);
             } else
-                throw new AssertionError( "At least one element array 'conformsTo' is not a string value (" + conformTo
-                                          + ")" );
+                throw new AssertionError("At least one element array 'conformsTo' is not a string value (" + conformTo
+                        + ")");
         }
         return requirementClasses;
     }
 
-    
-    
-    
 }
