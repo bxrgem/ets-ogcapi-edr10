@@ -21,7 +21,7 @@ import java.util.List;
  * </p>
  *
  * <pre>
- * ets-${ets-code}-${version}-aio.jar [-o|--outputDir $TMPDIR] [-d|--deleteSubjectOnFinish] [test-run-props.xml]
+ * ets-${ets-code}-${version}-aio.jar [-o|--outputDir $TMPDIR] [-d|--deleteSubjectOnFinish] --generate-html [test-run-props.xml]
  * </pre>
  */
 public class CommandLineArguments {
@@ -34,6 +34,9 @@ public class CommandLineArguments {
 
     @Parameter(names = {"-d", "--deleteSubjectOnFinish"}, description = "Delete file containing representation of test subject when finished")
     private boolean deleteSubjectOnFinish = false;
+
+    @Parameter(names={"--generate-html"}, description = "Generate HTML representation of test results")
+    private boolean generateHtml = false;
 
     public CommandLineArguments() {
         this.xmlProps = new ArrayList<>();
@@ -56,5 +59,9 @@ public class CommandLineArguments {
 
     public boolean doDeleteSubjectOnFinish() {
         return deleteSubjectOnFinish;
+    }
+
+    public boolean doGenerateHtml() {
+        return generateHtml;
     }
 }

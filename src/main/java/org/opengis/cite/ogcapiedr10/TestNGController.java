@@ -1,6 +1,7 @@
 package org.opengis.cite.ogcapiedr10;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -23,6 +24,7 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.occamlab.te.spi.executors.TestRunExecutor;
 import com.occamlab.te.spi.executors.testng.TestNGExecutor;
+import com.occamlab.te.spi.util.HtmlReport;
 import com.occamlab.te.spi.jaxrs.TestSuiteController;
 
 /**
@@ -50,13 +52,13 @@ public class TestNGController implements TestSuiteController {
      * </pre>
      *
      * @param args
-     *            Test run arguments (optional). The first argument must refer
-	   *            to an XML properties file containing the expected set of test
-	   *            run arguments. If no argument is supplied, the file located at
-	   *            ${user.home}/test-run-props.xml will be used.
+     *             Test run arguments (optional). The first argument must refer
+     *             to an XML properties file containing the expected set of test
+     *             run arguments. If no argument is supplied, the file located at
+     *             ${user.home}/test-run-props.xml will be used.
      * @throws Exception
-     *             If the test run cannot be executed (usually due to
-     *             unsatisfied pre-conditions).
+     *                   If the test run cannot be executed (usually due to
+     *                   unsatisfied pre-conditions).
      */
     public static void main(String[] args) throws Exception {
         CommandLineArguments testRunArgs = new CommandLineArguments();
@@ -77,6 +79,11 @@ public class TestNGController implements TestSuiteController {
         TestNGController controller = new TestNGController(testRunArgs.getOutputDir());
         Source testResults = controller.doTestRun(testRunProps);
         System.out.println("Test results: " + testResults.getSystemId());
+
+        if (testRunArgs.doGenerateHtml() ) {
+           System.out.println("HTML result written to directory: " + generateHtml(testResults.getSystemId()).getAbsolutePath());
+        }
+
     }
 
     /**
@@ -91,9 +98,9 @@ public class TestNGController implements TestSuiteController {
      * Construct a controller that writes results to the given output directory.
      *
      * @param outputDir
-     *            The location of the directory in which test results will be
-     *            written (a file system path or a 'file' URI). It will be
-     *            created if it does not exist.
+     *                  The location of the directory in which test results will be
+     *                  written (a file system path or a 'file' URI). It will be
+     *                  created if it does not exist.
      */
     public TestNGController(String outputDir) {
         InputStream is = getClass().getResourceAsStream("ets.properties");
@@ -115,6 +122,18 @@ public class TestNGController implements TestSuiteController {
         TestSuiteLogger.log(Level.CONFIG, "Using outputDirPath: " + resultsDir.getAbsolutePath());
         // NOTE: setting third argument to 'true' enables the default listeners
         this.executor = new TestNGExecutor(tngSuite.toString(), resultsDir.getAbsolutePath(), false);
+    }
+
+    public static File generateHtml(String testngResults) throws Exception {
+        File outputPath=null;
+        
+        if(testngResults.startsWith("file:")) {
+            outputPath = new File(URI.create(testngResults)).getParentFile();
+        }else {
+            outputPath = new File(testngResults).getParentFile();
+        }   
+                
+        return HtmlReport.earlHtmlReport(outputPath.getAbsolutePath());
     }
 
     @Override
@@ -143,10 +162,12 @@ public class TestNGController implements TestSuiteController {
      * checks fail.
      *
      * @param testRunArgs
-     *            A DOM Document containing a set of XML properties (key-value
-     *            pairs).
+     *                    A DOM Document containing a set of XML properties
+     *                    (key-value
+     *                    pairs).
      * @throws IllegalArgumentException
-     *             If any arguments are missing or invalid for some reason.
+     *                                  If any arguments are missing or invalid for
+     *                                  some reason.
      */
     void validateTestRunArgs(Document testRunArgs) {
         if (null == testRunArgs || !testRunArgs.getDocumentElement().getNodeName().equals("properties")) {
