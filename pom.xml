@@ -160,7 +160,6 @@
           <show>package</show>
           <links>
             <link>https://javadoc.io/doc/org.testng/testng/latest/</link>
-            <!--<link>http://testng.org/javadocs/</link>-->
           </links>
         </configuration>
         <executions>
