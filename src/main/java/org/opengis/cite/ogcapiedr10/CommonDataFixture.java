@@ -1,13 +1,9 @@
 package org.opengis.cite.ogcapiedr10;
 
-import static org.opengis.cite.ogcapiedr10.SuiteAttribute.API_MODEL;
 import static org.opengis.cite.ogcapiedr10.SuiteAttribute.NO_OF_COLLECTIONS;
 import static org.opengis.cite.ogcapiedr10.SuiteAttribute.REQUIREMENTCLASSES;
 
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

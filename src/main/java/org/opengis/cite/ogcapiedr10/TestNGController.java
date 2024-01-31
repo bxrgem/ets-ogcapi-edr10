@@ -1,7 +1,6 @@
 package org.opengis.cite.ogcapiedr10;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;

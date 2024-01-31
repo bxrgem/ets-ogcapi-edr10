@@ -2,27 +2,17 @@ package org.opengis.cite.ogcapiedr10.encodings.edrgeojson;
 
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
-import org.everit.json.schema.Schema;
-import org.everit.json.schema.loader.SchemaLoader;
-import org.json.JSONObject;
 
 import org.opengis.cite.ogcapiedr10.CommonFixture;
 import org.opengis.cite.ogcapiedr10.EtsAssert;
 import org.opengis.cite.ogcapiedr10.encodings.geojson.GeoJSONValidator;
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
-
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
-import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Scanner;
 import java.util.Set;
 
 import static io.restassured.http.ContentType.JSON;

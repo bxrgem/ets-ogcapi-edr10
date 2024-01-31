@@ -4,8 +4,6 @@ import static org.opengis.cite.ogcapiedr10.openapi3.OpenApiUtils.PATH.COLLECTION
 import static org.opengis.cite.ogcapiedr10.openapi3.OpenApiUtils.PATH.CONFORMANCE;
 
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;

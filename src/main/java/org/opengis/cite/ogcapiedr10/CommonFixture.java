@@ -10,11 +10,9 @@ import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.TimeZone;
-import java.lang.reflect.Method;
 
 import org.opengis.cite.ogcapiedr10.util.ClientUtils;
 
-import org.opengis.util.FactoryException;
 import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;

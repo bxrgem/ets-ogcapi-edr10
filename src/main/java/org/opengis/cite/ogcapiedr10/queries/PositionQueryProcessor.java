@@ -4,12 +4,8 @@ import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 
-
-import java.net.URL;
 import java.net.URLEncoder;
 import java.util.*;
-
-import org.testng.Assert;
 
 import static io.restassured.http.ContentType.JSON;
 import static io.restassured.http.Method.GET;
