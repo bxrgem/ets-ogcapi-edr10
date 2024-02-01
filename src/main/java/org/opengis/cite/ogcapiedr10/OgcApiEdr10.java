@@ -11,6 +11,11 @@ public class OgcApiEdr10 {
     }
 
     public static final String OPEN_API_MIME_TYPE = "application/vnd.oai.openapi+json;version=3.0";
+    public static final String OPEN_API_YAML_MIME_TYPE = "application/vnd.oai.openapi+yaml;version=3.0";
+    public static final String OPEN_API_V31_MIME_TYPE = "application/vnd.oai.openapi+json;version=3.1";
+    public static final String OPEN_API_V31_YAML_MIME_TYPE = "application/vnd.oai.openapi+yaml;version=3.1";
+    
+
 
     public static final String GEOJSON_MIME_TYPE = "application/geo+json";
 

@@ -1,20 +1,8 @@
 package org.opengis.cite.ogcapiedr10.collections;
 
 import org.opengis.cite.ogcapiedr10.openapi3.TestPoint;
-import org.opengis.cite.ogcapiedr10.openapi3.UriBuilder;
-import org.opengis.cite.ogcapiedr10.util.TemporalExtent;
-import org.testng.ITestContext;
-import org.testng.SkipException;
-import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import com.reprezen.kaizen.oasparser.model3.OpenApi3;
-import com.reprezen.kaizen.oasparser.model3.Operation;
-import com.reprezen.kaizen.oasparser.model3.Parameter;
-import com.reprezen.kaizen.oasparser.model3.Path;
-import com.reprezen.kaizen.oasparser.model3.Schema;
-
-import io.restassured.response.Response;
 
 /**
  * /collections/{collectionId}/

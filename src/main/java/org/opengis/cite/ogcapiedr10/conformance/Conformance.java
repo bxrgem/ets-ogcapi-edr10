@@ -2,15 +2,12 @@ package org.opengis.cite.ogcapiedr10.conformance;
 
 import static io.restassured.http.ContentType.JSON;
 import static io.restassured.http.Method.GET;
-import static org.opengis.cite.ogcapiedr10.SuiteAttribute.API_MODEL;
-import static org.opengis.cite.ogcapiedr10.SuiteAttribute.IUT;
 import static org.opengis.cite.ogcapiedr10.SuiteAttribute.REQUIREMENTCLASSES;
 import static org.opengis.cite.ogcapiedr10.conformance.RequirementClass.CORE;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.containsString;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,8 +18,6 @@ import org.testng.ITestContext;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-
-import com.reprezen.kaizen.oasparser.model3.OpenApi3;
 
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
@@ -38,9 +33,6 @@ public class Conformance extends CommonFixture {
 
     @DataProvider(name = "conformanceUris")
     public Object[][] conformanceUris(ITestContext testContext) {
-        OpenApi3 apiModel = (OpenApi3) testContext.getSuite().getAttribute(API_MODEL.getName());
-        URI iut = (URI) testContext.getSuite().getAttribute(IUT.getName());
-
         TestPoint tp = new TestPoint(rootUri.toString(), "/conformance", null);
 
         List<TestPoint> testPoints = new ArrayList<TestPoint>();

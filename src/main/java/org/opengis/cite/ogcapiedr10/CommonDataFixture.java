@@ -8,8 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.reprezen.kaizen.oasparser.OpenApiParser;
-import com.reprezen.kaizen.oasparser.model3.OpenApi3;
+import io.swagger.v3.parser.OpenAPIV3Parser;
+import io.swagger.v3.parser.core.models.SwaggerParseResult;
+import io.swagger.v3.oas.models.OpenAPI;
+
+//import com.reprezen.kaizen.oasparser.OpenApiParser;
+//import com.reprezen.kaizen.oasparser.model3.OpenApi3;
 
 import org.opengis.cite.ogcapiedr10.conformance.RequirementClass;
 import org.testng.ITestContext;
@@ -23,25 +27,22 @@ public class CommonDataFixture extends CommonFixture {
 
 	private static final int DEFAULT_NUMBER_OF_COLLECTIONS = 3;
 
-	private OpenApi3 apiModel = null;
-	
+	private OpenAPI apiModel = null;
+
 	public URI modelUri = null;
 
 	private List<RequirementClass> requirementClasses;
 
 	protected int noOfCollections = DEFAULT_NUMBER_OF_COLLECTIONS;
-	
-	
-	
-	public OpenApi3 getModel()
-	{
-		if(this.apiModel==null) {
+
+	public OpenAPI getModel() {
+		if (this.apiModel == null) {
 			String msg = "apiModel is null in CommonDataFixture";
 			System.out.println(msg);
 			throw new NullPointerException(msg);
 		}
 		return this.apiModel;
-	}	
+	}
 
 	@BeforeClass
 	public void requirementClasses(ITestContext testContext) {
@@ -56,9 +57,8 @@ public class CommonDataFixture extends CommonFixture {
 			this.noOfCollections = (Integer) noOfCollections;
 		}
 	}
-	
-	private URI appendFormatToURI(URI input)
-	{
+
+	private URI appendFormatToURI(URI input) {
 		URI modelUri = null;
 		try {
 
@@ -70,34 +70,40 @@ public class CommonDataFixture extends CommonFixture {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		return modelUri;
 	}
 
 	@BeforeClass
 	public void retrieveApiModel(ITestContext testContext) {
+		OpenAPIV3Parser parser = new OpenAPIV3Parser();
+		SwaggerParseResult result;
 
 		modelUri = (URI) testContext.getSuite().getAttribute(SuiteAttribute.API_DEFINITION.getName());
-		
 		modelUri = appendFormatToURI(modelUri);
 
-		boolean validate = false;
-		
-
 		try {
-			this.apiModel = (OpenApi3) new OpenApiParser().parse(modelUri.toURL(), validate);
+			System.err.println("retrieveApiModel (1): '" + modelUri.toURL().toString() + "'");
+			result = parser.readLocation(modelUri.toURL().toString(), null, null);
+
+			if (result.getOpenAPI() == null || result.getMessages() == null || result.getMessages().size() > 0) {
+				modelUri = new URI(modelUri.toString().replace("application/json", "json"));
+				System.err.println("retrieveApiModel (2): '" + modelUri.toURL().toString() + "'");
+				result = parser.readLocation(modelUri.toURL().toString(), null, null);
+			}
+
+			this.apiModel = result.getOpenAPI();
 		} catch (Exception ed) {
 			try {
 				modelUri = new URI(modelUri.toString().replace("application/json", "json"));
-
-				this.apiModel = (OpenApi3) new OpenApiParser().parse(modelUri.toURL(), validate);
+				System.err.println("retrieveApiModel (3): '" + modelUri.toURL().toString() + "'");
+				result = parser.readLocation(modelUri.toURL().toString(), null, null);
+				this.apiModel = result.getOpenAPI();
 			} catch (Exception ignored) {
 			}
 		}
 
 	}
-
-
 
 	protected List<String> createListOfMediaTypesToSupportForOtherResources(Map<String, Object> linkToSelf) {
 		if (this.requirementClasses == null)

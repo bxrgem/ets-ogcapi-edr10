@@ -5,7 +5,8 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
-import com.reprezen.kaizen.oasparser.model3.OpenApi3;
+//import com.reprezen.kaizen.oasparser.model3.OpenApi3;
+import io.swagger.v3.oas.models.OpenAPI;
 import com.sun.jersey.api.client.Client;
 
 /**
@@ -42,7 +43,7 @@ public enum SuiteAttribute {
     /**
      * Parsed OpenApi3 document resource /api; Added during execution.
      */
-    API_MODEL( "apiModel", OpenApi3.class ),
+    API_MODEL( "apiModel", OpenAPI.class ),
 
     /**
      * Requirement classes parsed from /conformance; Added during execution.

@@ -146,6 +146,18 @@
       <artifactId>geotk-temporal</artifactId>
       <version>3.21</version>
     </dependency>
+    <dependency>
+      <groupId>io.swagger.parser.v3</groupId>
+      <artifactId>swagger-parser</artifactId>
+      <version>2.1.20</version>
+    </dependency>
+    <!--
+    <dependency>
+      <groupId>io.swagger.core.v3</groupId>
+      <artifactId>swagger-core</artifactId>
+      <version>2.2.7</version>
+    </dependency>
+    -->
 
   </dependencies>
 

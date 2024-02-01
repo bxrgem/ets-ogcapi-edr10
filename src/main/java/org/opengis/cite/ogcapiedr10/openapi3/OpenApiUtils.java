@@ -15,14 +15,26 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.reprezen.kaizen.oasparser.model3.MediaType;
-import com.reprezen.kaizen.oasparser.model3.OpenApi3;
-import com.reprezen.kaizen.oasparser.model3.Operation;
-import com.reprezen.kaizen.oasparser.model3.Parameter;
-import com.reprezen.kaizen.oasparser.model3.Path;
-import com.reprezen.kaizen.oasparser.model3.Response;
-import com.reprezen.kaizen.oasparser.model3.Schema;
-import com.reprezen.kaizen.oasparser.model3.Server;
+//swagger imports
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.parameters.Parameter;
+import io.swagger.v3.oas.models.Paths;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.responses.ApiResponse;
+import io.swagger.v3.oas.models.responses.ApiResponses;
+import io.swagger.v3.oas.models.servers.Server;
+
+
+// import com.reprezen.kaizen.oasparser.model3.MediaType;
+// import com.reprezen.kaizen.oasparser.model3.OpenApi3;
+// import com.reprezen.kaizen.oasparser.model3.Operation;
+// import com.reprezen.kaizen.oasparser.model3.Parameter;
+// import com.reprezen.kaizen.oasparser.model3.Path;
+// import com.reprezen.kaizen.oasparser.model3.Response;
+// import com.reprezen.kaizen.oasparser.model3.Schema;
+// import com.reprezen.kaizen.oasparser.model3.Server;
 import com.sun.jersey.api.uri.UriTemplate;
 import com.sun.jersey.api.uri.UriTemplateParser;
 
@@ -92,14 +104,14 @@ public class OpenApiUtils {
 	}
 
 	/**
-	 * Parse all test points from the passed OpenApi3 document as described in
+	 * Parse all test points from the passed OpenAPI document as described in
 	 * A.4.3. Identify the Test Points.
 	 *
 	 * @param apiModel never <code>null</code>
 	 * @param iut      the url of the instance under test, never <code>null</code>
 	 * @return the parsed test points, may be empty but never <code>null</code>
 	 */
-	static List<TestPoint> retrieveTestPoints(OpenApi3 apiModel, URI iut) {
+	static List<TestPoint> retrieveTestPoints(OpenAPI apiModel, URI iut) {
       
 		List<Path> pathItemObjects = identifyTestPoints(apiModel);
 
@@ -109,32 +121,32 @@ public class OpenApiUtils {
 	}
 
 	/**
-	 * Parse the CONFORMANCE test points from the passed OpenApi3 document as
+	 * Parse the CONFORMANCE test points from the passed OpenAPI document as
 	 * described in A.4.3. Identify the Test Points.
 	 *
 	 * @param apiModel never <code>null</code>
 	 * @param iut      the url of the instance under test, never <code>null</code>
 	 * @return the parsed test points, may be empty but never <code>null</code>
 	 */
-	public static List<TestPoint> retrieveTestPointsForConformance(OpenApi3 apiModel, URI iut) {
+	public static List<TestPoint> retrieveTestPointsForConformance(OpenAPI apiModel, URI iut) {
 		return retrieveTestPoints(apiModel, iut, CONFORMANCE, false);
 	}
 
 	/**
-	 * Parse the COLLECTIONS METADATA test points from the passed OpenApi3 document
+	 * Parse the COLLECTIONS METADATA test points from the passed OpenAPI document
 	 * as described in A.4.3. Identify the Test Points.
 	 *
 	 * @param apiModel never <code>null</code>
 	 * @param iut      the url of the instance under test, never <code>null</code>
 	 * @return the parsed test points, may be empty but never <code>null</code>
 	 */
-	public static List<TestPoint> retrieveTestPointsForCollectionsMetadata(OpenApi3 apiModel, URI iut) {
+	public static List<TestPoint> retrieveTestPointsForCollectionsMetadata(OpenAPI apiModel, URI iut) {
 		return retrieveTestPoints(apiModel, iut, COLLECTIONS, false);
 	}
 
 	/**
 	 * Parse the COLLECTION METADATA test points for the passed collectionName
-	 * including the extended path from the passed OpenApi3 document as described in
+	 * including the extended path from the passed OpenAPI document as described in
 	 * A.4.3. Identify the Test Points.
 	 *
 	 * @param apiModel       never <code>null</code>
@@ -143,7 +155,7 @@ public class OpenApiUtils {
 	 * @param collectionName the extended path, may be <code>null</code>
 	 * @return the parsed test points, may be empty but never <code>null</code>
 	 */
-	public static List<TestPoint> retrieveTestPointsForCollectionMetadata(OpenApi3 apiModel, URI iut,
+	public static List<TestPoint> retrieveTestPointsForCollectionMetadata(OpenAPI apiModel, URI iut,
 			String collectionName) {
 		StringBuilder requestedPath = new StringBuilder();
 		requestedPath.append("/");
@@ -156,7 +168,7 @@ public class OpenApiUtils {
 	}
 
 	/**
-	 * Parse the COLLECTIONS test points from the passed OpenApi3 document as
+	 * Parse the COLLECTIONS test points from the passed OpenAPI document as
 	 * described in A.4.3. Identify the Test Points.
 	 *
 	 * @param apiModel       never <code>null</code>
@@ -167,7 +179,7 @@ public class OpenApiUtils {
 	 *                       returned)
 	 * @return the parsed test points, may be empty but never <code>null</code>
 	 */
-	public static List<TestPoint> retrieveTestPointsForCollections(OpenApi3 apiModel, URI iut, int noOfCollection) {
+	public static List<TestPoint> retrieveTestPointsForCollections(OpenAPI apiModel, URI iut, int noOfCollection) {
 
 		String[] resources = { "locations", "position", "radius", "area", "trajectory" }; 
 		 
@@ -206,7 +218,7 @@ public class OpenApiUtils {
 
 	/**
 	 * Parse the test points with the passed path including the extended path from
-	 * the passed OpenApi3 document as described in A.4.3. Identify the Test Points.
+	 * the passed OpenAPI document as described in A.4.3. Identify the Test Points.
 	 *
 	 * @param apiModel       never <code>null</code>
 	 * @param iut            the url of the instance under test, never
@@ -214,7 +226,7 @@ public class OpenApiUtils {
 	 * @param collectionName the extended path, may be <code>null</code>
 	 * @return the parsed test points, may be empty but never <code>null</code>
 	 */
-	public static List<TestPoint> retrieveTestPointsForCollection(OpenApi3 apiModel, URI iut, String collectionName) {
+	public static List<TestPoint> retrieveTestPointsForCollection(OpenAPI apiModel, URI iut, String collectionName) {
 		String requestedPath = createCollectionPath(collectionName);
 
 		List<TestPoint> testPoints = retrieveTestPoints(apiModel, iut, requestedPath, true);
@@ -223,7 +235,7 @@ public class OpenApiUtils {
 
 	/**
 	 * Parse the test points with the passed path including the extended path from
-	 * the passed OpenApi3 document as described in A.4.3. Identify the Test Points.
+	 * the passed OpenAPI document as described in A.4.3. Identify the Test Points.
 	 *
 	 * @param apiModel       never <code>null</code>
 	 * @param iut            the url of the instance under test, never
@@ -232,7 +244,7 @@ public class OpenApiUtils {
 	 * @param featureId      the id of the feature, never <code>null</code>
 	 * @return the parsed test points, may be empty but never <code>null</code>
 	 */
-	public static List<TestPoint> retrieveTestPointsForFeature(OpenApi3 apiModel, URI iut, String collectionName,
+	public static List<TestPoint> retrieveTestPointsForFeature(OpenAPI apiModel, URI iut, String collectionName,
 			String featureId) {
 		StringBuilder requestedPath = new StringBuilder();
 		requestedPath.append("/");
@@ -246,7 +258,7 @@ public class OpenApiUtils {
 		return testPoints.stream().filter(new ExactMatchFilter(requestedPath.toString())).collect(Collectors.toList());
 	}
 
-	public static Parameter retrieveParameterByName(String collectionItemPath, OpenApi3 apiModel, String name) {
+	public static Parameter retrieveParameterByName(String collectionItemPath, OpenAPI apiModel, String name) {
 		Path path = apiModel.getPath(collectionItemPath);
 		if (path != null) {
 			for (Parameter parameter : path.getParameters())
@@ -260,7 +272,7 @@ public class OpenApiUtils {
 		return null;
 	}
 
-	public static boolean isFreeFormParameterSupportedForCollection(OpenApi3 apiModel, String collectionName) {
+	public static boolean isFreeFormParameterSupportedForCollection(OpenAPI apiModel, String collectionName) {
 		String requestedPath = createCollectionPath(collectionName);
 
 		List<Path> paths = identifyTestPoints(apiModel, requestedPath, new PathMatcher());
@@ -275,7 +287,7 @@ public class OpenApiUtils {
 		return false;
 	}
 
-	public static boolean isParameterSupportedForCollection(OpenApi3 apiModel, String collectionName,
+	public static boolean isParameterSupportedForCollection(OpenAPI apiModel, String collectionName,
 			String queryParam) {
 		String requestedPath = createCollectionPath(collectionName);
 
@@ -301,18 +313,18 @@ public class OpenApiUtils {
 		return requestedPath.toString();
 	}
 
-	private static List<TestPoint> retrieveTestPoints(OpenApi3 apiModel, URI iut, PATH path,
+	private static List<TestPoint> retrieveTestPoints(OpenAPI apiModel, URI iut, PATH path,
 			boolean allowEmptyTemplateReplacements) {
 		String requestedPath = path.getPathItem();
 		return retrieveTestPoints(apiModel, iut, requestedPath, allowEmptyTemplateReplacements);
 	}
 
-	private static List<TestPoint> retrieveTestPoints(OpenApi3 apiModel, URI iut, String requestedPath,
+	private static List<TestPoint> retrieveTestPoints(OpenAPI apiModel, URI iut, String requestedPath,
 			boolean allowEmptyTemplateReplacements) {
 		return retrieveTestPoints(apiModel, iut, requestedPath, new PathMatcher(), allowEmptyTemplateReplacements);
 	}
 
-	private static List<TestPoint> retrieveTestPoints(OpenApi3 apiModel, URI iut, String requestedPath,
+	private static List<TestPoint> retrieveTestPoints(OpenAPI apiModel, URI iut, String requestedPath,
 			PathMatcherFunction<Boolean, String, String> pathMatcher, boolean allowEmptyTemplateReplacements) {
 		List<Path> pathItemObjects = identifyTestPoints(apiModel, requestedPath, pathMatcher);
 		List<PathItemAndServer> pathItemAndServers = identifyServerUrls(apiModel, iut, pathItemObjects);
@@ -345,14 +357,14 @@ public class OpenApiUtils {
 	 *
 	 * @param apiModel never <code>null</code>
 	 */
-	private static List<Path> identifyTestPoints(OpenApi3 apiModel) {
+	private static List<Path> identifyTestPoints(OpenAPI apiModel) {
 		List<Path> allTestPoints = new ArrayList<>();
 		for (PATH path : PATH.values())
 			allTestPoints.addAll(identifyTestPoints(apiModel, "/" + path.getPathItem(), new PathMatcher()));
 		return allTestPoints;
 	}
 
-	private static List<Path> identifyTestPoints(OpenApi3 apiModel, String path,
+	private static List<Path> identifyTestPoints(OpenAPI apiModel, String path,
 			PathMatcherFunction<Boolean, String, String> pathMatch) {
 		List<Path> pathItems = new ArrayList<>();
 		Map<String, Path> pathItemObjects = apiModel.getPaths();
@@ -414,7 +426,7 @@ public class OpenApiUtils {
 	 * @param iut             never <code>null</code>
 	 * @param pathItemObjects never <code>null</code>
 	 */
-	private static List<PathItemAndServer> identifyServerUrls(OpenApi3 apiModel, URI iut, List<Path> pathItemObjects) {
+	private static List<PathItemAndServer> identifyServerUrls(OpenAPI apiModel, URI iut, List<Path> pathItemObjects) {
 		List<PathItemAndServer> pathItemAndServers = new ArrayList<>();
 
 		for (Path pathItemObject : pathItemObjects) {
@@ -588,7 +600,7 @@ public class OpenApiUtils {
 		}
 	}
 
-	private static List<String> identifyServerObjects(OpenApi3 apiModel, Path pathItemObject,
+	private static List<String> identifyServerObjects(OpenAPI apiModel, Path pathItemObject,
 			Operation operationObject) {
 		if (operationObject.hasServers())
 			return parseUrls(operationObject.getServers());
