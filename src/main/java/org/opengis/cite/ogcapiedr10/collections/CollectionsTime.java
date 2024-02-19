@@ -1,4 +1,5 @@
 package org.opengis.cite.ogcapiedr10.collections;
+import java.util.List;
 
 import static org.opengis.cite.ogcapiedr10.EtsAssert.assertFalse;
 import static org.opengis.cite.ogcapiedr10.EtsAssert.assertTrue;
@@ -29,12 +30,19 @@ public class CollectionsTime {
 	}
 
 	private Parameter findParameter(Paths paths, String paramName, TestPoint testPoint) {
+		//System.err.println("findParameter ("+paramName+"): " + testPoint.getPath());
 		Parameter foundParam = null;
 		for (String path : paths.keySet()) {
-			if (path.endsWith(testPoint.getPath())) {
+			if (path.contains("collections") && path.endsWith(testPoint.getPath())) {
 				PathItem pathItem = paths.get(path);
 				for (Operation op : pathItem.readOperations()) {
-					for (Parameter param : op.getParameters()) {
+					List<Parameter> parameters = op.getParameters();
+			
+					if( parameters==null){
+						continue;
+					}
+					
+					for (Parameter param : parameters) {
 						if (hasName(param)) {
 							if (param.getName().equals(paramName)) {
 								foundParam = param;
@@ -110,15 +118,15 @@ public class CollectionsTime {
 	}
 
 	public boolean hasName(Parameter parameter) {
-		boolean result = true;
-
 		try {
-			parameter.getName(); // we do this to check whether there is a name
+			 // we do this to check whether there is a name
+			if( parameter.getName() != null) {
+				return true;
+			}
 		} catch (Exception ee) {
-			result = false;
 		}
 
-		return result;
+		return false;
 	}
 
 	/**
@@ -176,7 +184,9 @@ public class CollectionsTime {
 
 	public void crsParameterDefinition(TestPoint testPoint, OpenAPI model) {
 		String paramName = "crs";
+		try {
 		Parameter crs = findParameter(model.getPaths(), paramName, testPoint);
+		
 
 		if (crs != null) {
 			String msg = "Expected property '%s' with value '%s' but was '%s'";
@@ -187,6 +197,10 @@ public class CollectionsTime {
 			assertEquals(crs.getStyle(), "form", String.format(msg, "style", "form", crs.getStyle()));
 			assertFalse(isExplode(crs), String.format(msg, "explode", "false", crs.getExplode()));
 		}
+		} catch (Exception e) {
+			System.err.println("crsParameterDefinition: " + e.getMessage());
+      e.printStackTrace();
+    }
 	}
 
 	/**

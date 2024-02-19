@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
-import com.reprezen.kaizen.oasparser.model3.MediaType;
+import io.swagger.v3.oas.models.media.MediaType;
 
 /**
  * Encapsulates a Test Point with the UriTemplate and predefined replacements.

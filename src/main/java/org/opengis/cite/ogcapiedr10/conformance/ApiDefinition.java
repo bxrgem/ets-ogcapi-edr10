@@ -18,7 +18,7 @@ import org.testng.annotations.Test;
 
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
-//import io.swagger.v3.oas.models.OpenAPI;
+
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 
@@ -73,24 +73,19 @@ public class ApiDefinition extends CommonFixture {
     @Test(description = "Implements Abstract Test 5 (/conf/core/api-definition-success)", groups = "apidefinition", dependsOnMethods = "openapiDocumentRetrieval")
     public void apiDefinitionValidation(ITestContext testContext)
             throws MalformedURLException {
-
         OpenAPIV3Parser parser = new OpenAPIV3Parser();
         SwaggerParseResult result = null;
         Response response = init().baseUri(apiUrl.getHref()).accept(apiUrl.getType()).when().request(GET);
 
         try {
-            System.err.println("API Definition from: '"+apiUrl.getHref()+"'");
             result = parser.readContents(response.asString(), null, null);
-
-            if(result.getMessages()!= null ) {
-                System.err.println("API Definition: parse errors '"+apiUrl.getHref()+"'");
+            if(result.getMessages()!= null  && result.getMessages().size() > 0) {
+                System.err.println("API Definition: parse errors/warnings '"+apiUrl.getHref()+"'");
                 for (String message : result.getMessages()) {
-                    System.err.println(message);
+                    System.err.println(" -- " + message);
                 }
             }
-            if( result.getOpenAPI() != null ) {
-                System.err.println("API Definition: " + result.toString());
-            }
+
         } catch (Exception e) {
             e.printStackTrace();
             assertTrue(false,

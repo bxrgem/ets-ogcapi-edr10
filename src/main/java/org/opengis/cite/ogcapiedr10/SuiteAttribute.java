@@ -77,6 +77,7 @@ public enum SuiteAttribute {
         return attrName;
     }
 
+    
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder( attrName );

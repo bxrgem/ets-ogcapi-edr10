@@ -17,8 +17,8 @@ import org.opengis.cite.ogcapiedr10.openapi3.OpenApiUtils;
 import org.opengis.cite.ogcapiedr10.openapi3.TestPoint;
 import org.testng.SkipException;
 
-import com.reprezen.kaizen.oasparser.model3.OpenApi3;
-import com.reprezen.kaizen.oasparser.model3.Parameter;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.parameters.Parameter;
 
 import io.restassured.path.json.JsonPath;
 
@@ -74,7 +74,7 @@ public class FeaturesAssertions {
                                                         + numberOfFeatures + ")" );
     }
 
-    static void assertNumberMatched( OpenApi3 apiModel, URI iut, String collectionName, JsonPath jsonPath,
+    static void assertNumberMatched( OpenAPI apiModel, URI iut, String collectionName, JsonPath jsonPath,
                                      boolean skipIfNoNumberMatched )
                             throws URISyntaxException {
         if ( !hasProperty( "numberMatched", jsonPath ) )

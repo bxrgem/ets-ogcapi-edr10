@@ -35,7 +35,7 @@ public class CommandLineArguments {
     @Parameter(names = {"-d", "--deleteSubjectOnFinish"}, description = "Delete file containing representation of test subject when finished")
     private boolean deleteSubjectOnFinish = false;
 
-    @Parameter(names={"--generate-html"}, description = "Generate HTML representation of test results")
+    @Parameter(names={"--html","--generate-html"}, description = "Generate HTML representation of test results")
     private boolean generateHtml = false;
 
     public CommandLineArguments() {

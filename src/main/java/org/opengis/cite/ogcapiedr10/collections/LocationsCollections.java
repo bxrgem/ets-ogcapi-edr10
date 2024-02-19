@@ -20,12 +20,7 @@ public class LocationsCollections extends AbstractFeatures {
 	 */
 	@Test(description = "Implements Abstract Test 139 (/conf/core/datetime-definition)", dataProvider = "locationsCollectionPaths", alwaysRun = true)
 	public void locationsDateTimeParameterDefinition(TestPoint testPoint) {
-
-		
-		
 		ct.dateTimeParameterDefinition(testPoint,this.getModel()); System.gc();
-		
-
 	}
 
 	/**
@@ -35,9 +30,6 @@ public class LocationsCollections extends AbstractFeatures {
 	 */
 	@Test(description = "Implements Abstract Test 141 (/conf/collections/REQ_rc-parameter-name-definition)", dataProvider = "locationsCollectionPaths", alwaysRun = true)
 	public void locationsParameternameParameterDefinition(TestPoint testPoint) {
-
-		
-		
 		ct.parameternameParameterDefinition(testPoint,this.getModel()); System.gc();	
 	}
 
@@ -48,13 +40,8 @@ public class LocationsCollections extends AbstractFeatures {
 	 */
 	@Test(description = "Implements Abstract Test 143 (/conf/edr/REQ_rc-crs-definition)", dataProvider = "locationsCollectionPaths", alwaysRun = true)
 	public void locationsCrsParameterDefinition(TestPoint testPoint) {
-
-		
-		
 		ct.crsParameterDefinition(testPoint,this.getModel()); System.gc();	
-
 	}
-	
 	
 
 	/**
@@ -64,17 +51,7 @@ public class LocationsCollections extends AbstractFeatures {
 	 */
 	@Test(description = "Abstract Test 145 (/conf/edr/rc-f-definition)", dataProvider = "locationsCollectionPaths", alwaysRun = true)
 	public void locationsFParameterDefinition(TestPoint testPoint) {
-
-
-		
-		
 		ct.fParameterDefinition(testPoint,this.getModel()); System.gc();
 	}	
-
-	
-
-
-
-	
 }
 

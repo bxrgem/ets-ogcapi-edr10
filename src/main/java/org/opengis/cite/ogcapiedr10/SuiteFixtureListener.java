@@ -7,11 +7,15 @@ import java.net.URI;
 import java.util.Map;
 import java.util.logging.Level;
 
+import io.swagger.v3.oas.models.OpenAPI;
+
+import org.opengis.cite.ogcapiedr10.openapi3.OpenApiUtils;
 import org.opengis.cite.ogcapiedr10.util.ClientUtils;
 import org.opengis.cite.ogcapiedr10.util.TestSuiteLogger;
 import org.opengis.cite.ogcapiedr10.util.URIUtils;
 import org.testng.ISuite;
 import org.testng.ISuiteListener;
+import org.testng.ITestContext;
 
 import com.sun.jersey.api.client.Client;
 
@@ -81,18 +85,24 @@ public class SuiteFixtureListener implements ISuiteListener {
                                                 TestRunArg.NOOFCOLLECTIONS.toString(), noOfCollections ) );
         }
         
-   
-        
         URI apiDefinitionLocation = URI.create( params.get( "apiDefinition" ));
         suite.setAttribute( SuiteAttribute.API_DEFINITION.getName(), apiDefinitionLocation );
         File apiDefinitionFile = null;
         try {
         	apiDefinitionFile = URIUtils.dereferenceURI( apiDefinitionLocation );
+            TestSuiteLogger.log( Level.FINE, String.format( "Wrote test subject to file: %s (%d bytes)",
+                                                        entityFile.getAbsolutePath(), entityFile.length() ) );
         } catch ( IOException iox ) {
             throw new RuntimeException( "Failed to dereference resource located at " + apiDefinitionLocation, iox );
         }        
-        
-    }
+
+        TestSuiteLogger.log( Level.FINE, String.format( "Wrote test subject to file: %s (%d bytes)",
+            apiDefinitionFile.getAbsolutePath(), apiDefinitionFile.length() ) );
+        OpenAPI apiModel=OpenApiUtils.retrieveApiModel(apiDefinitionLocation);
+		OpenApiUtils.setBaseUri(apiModel, iutRef);
+	}
+
+   
 
     /**
      * A client component is added to the suite fixture as the value of the {@link SuiteAttribute#CLIENT} attribute; it

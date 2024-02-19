@@ -24,7 +24,8 @@ import org.testng.SkipException;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 
-import com.reprezen.kaizen.oasparser.model3.Parameter;
+//import com.reprezen.kaizen.oasparser.model3.Parameter;
+import io.swagger.v3.oas.models.parameters.Parameter;
 
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
@@ -65,15 +66,13 @@ public class AbstractFeatures extends CommonDataFixture {
 
 	@DataProvider(name = "locationsCollectionPaths")
 	public Iterator<Object[]> locationsCollectionPaths(ITestContext testContext) {
-
+		List<Object[]> collectionsData = new ArrayList<>();
 		List<TestPoint> testPointsForCollections = new ArrayList<TestPoint>();
 
 		testPointsForCollections.add(new TestPoint(rootUri.toString(), "/locations", null));
-
-		List<Object[]> collectionsData = new ArrayList<>();
+		
 		if (apiDef.contains("/locations")) {
 			for (TestPoint testPointForCollections : testPointsForCollections) {
-
 				collectionsData.add(new Object[] { testPointForCollections });
 			}
 		}
@@ -83,15 +82,13 @@ public class AbstractFeatures extends CommonDataFixture {
 
 	@DataProvider(name = "positionCollectionPaths")
 	public Iterator<Object[]> positionCollectionPaths(ITestContext testContext) {
-
 		List<TestPoint> testPointsForCollections = new ArrayList<TestPoint>();
+		List<Object[]> collectionsData = new ArrayList<>();
 
 		testPointsForCollections.add(new TestPoint(rootUri.toString(), "/position", null));
 
-		List<Object[]> collectionsData = new ArrayList<>();
 		if (apiDef.contains("/position")) {
 			for (TestPoint testPointForCollections : testPointsForCollections) {
-
 				collectionsData.add(new Object[] { testPointForCollections });
 			}
 		}
@@ -101,15 +98,13 @@ public class AbstractFeatures extends CommonDataFixture {
 
 	@DataProvider(name = "areaCollectionPaths")
 	public Iterator<Object[]> areaCollectionPaths(ITestContext testContext) {
-
+		List<Object[]> collectionsData = new ArrayList<>();
 		List<TestPoint> testPointsForCollections = new ArrayList<TestPoint>();
 
 		testPointsForCollections.add(new TestPoint(rootUri.toString(), "/area", null));
 
-		List<Object[]> collectionsData = new ArrayList<>();
 		if (apiDef.contains("/area")) {
 			for (TestPoint testPointForCollections : testPointsForCollections) {
-
 				collectionsData.add(new Object[] { testPointForCollections });
 			}
 		}
@@ -119,15 +114,13 @@ public class AbstractFeatures extends CommonDataFixture {
 
 	@DataProvider(name = "trajectoryCollectionPaths")
 	public Iterator<Object[]> trajectoryCollectionPaths(ITestContext testContext) {
-
+		List<Object[]> collectionsData = new ArrayList<>();
 		List<TestPoint> testPointsForCollections = new ArrayList<TestPoint>();
 
 		testPointsForCollections.add(new TestPoint(rootUri.toString(), "/trajectory", null));
 
-		List<Object[]> collectionsData = new ArrayList<>();
 		if (apiDef.contains("/trajectory")) {
 			for (TestPoint testPointForCollections : testPointsForCollections) {
-
 				collectionsData.add(new Object[] { testPointForCollections });
 			}
 		}
@@ -137,15 +130,13 @@ public class AbstractFeatures extends CommonDataFixture {
 
 	@DataProvider(name = "cubeCollectionPaths")
 	public Iterator<Object[]> cubeCollectionPaths(ITestContext testContext) {
-
+		List<Object[]> collectionsData = new ArrayList<>();
 		List<TestPoint> testPointsForCollections = new ArrayList<TestPoint>();
 
 		testPointsForCollections.add(new TestPoint(rootUri.toString(), "/cube", null));
 
-		List<Object[]> collectionsData = new ArrayList<>();
 		if (apiDef.contains("/cube")) {
 			for (TestPoint testPointForCollections : testPointsForCollections) {
-
 				collectionsData.add(new Object[] { testPointForCollections });
 			}
 		}
@@ -155,15 +146,13 @@ public class AbstractFeatures extends CommonDataFixture {
 
 	@DataProvider(name = "corridorCollectionPaths")
 	public Iterator<Object[]> corridorCollectionPaths(ITestContext testContext) {
-
+		List<Object[]> collectionsData = new ArrayList<>();
 		List<TestPoint> testPointsForCollections = new ArrayList<TestPoint>();
 
 		testPointsForCollections.add(new TestPoint(rootUri.toString(), "/corridor", null));
 
-		List<Object[]> collectionsData = new ArrayList<>();
 		if (apiDef.contains("/corridor")) {
 			for (TestPoint testPointForCollections : testPointsForCollections) {
-
 				collectionsData.add(new Object[] { testPointForCollections });
 			}
 		}
@@ -173,12 +162,8 @@ public class AbstractFeatures extends CommonDataFixture {
 
 	@BeforeClass
 	public void retrieveRequiredInformationFromTestContext(ITestContext testContext) {
-
-	
 		    Response response = init().baseUri(this.modelUri.toString()).accept( OPEN_API_MIME_TYPE ).when().request( GET );
 		    apiDef = response.asString();
-			
-		
 	}
 
 	/**
@@ -377,11 +362,8 @@ public class AbstractFeatures extends CommonDataFixture {
 	}
 
 	protected class ResponseData {
-
 		private final Response response;
-
 		protected final ZonedDateTime timeStampBeforeResponse;
-
 		protected final ZonedDateTime timeStampAfterResponse;
 
 		public ResponseData(Response response, ZonedDateTime timeStampBeforeResponse,
@@ -397,7 +379,6 @@ public class AbstractFeatures extends CommonDataFixture {
 	}
 
 	protected class CollectionResponseKey {
-
 		private final String id;
 
 		protected CollectionResponseKey(String id) {

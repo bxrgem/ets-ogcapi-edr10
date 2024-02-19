@@ -62,4 +62,21 @@ public class URIUtils {
         return destFile;
     }
 
+    static public URI appendFormatToURI(URI input) {
+		URI modelUri = null;
+		try {
+
+			if (input.toString().contains("?")) {
+				modelUri = new URI(input.toString() + "f=application/json");
+			} else {
+				modelUri = new URI(input.toString() + "?f=application/json");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return modelUri;
+	}
+
+
 }

@@ -26,9 +26,6 @@ import io.restassured.specification.RequestSpecification;
  * defined in a subclass.
  */
 public class CommonFixture {
-	
-	
-
     private ByteArrayOutputStream requestOutputStream = new ByteArrayOutputStream();
 
     private ByteArrayOutputStream responseOutputStream = new ByteArrayOutputStream();
@@ -57,11 +54,7 @@ public class CommonFixture {
     public void initCommonFixture( ITestContext testContext ) {
         initLogging();
         rootUri = (URI) testContext.getSuite().getAttribute( SuiteAttribute.IUT.getName() );
-        
-
         apiDefUri = (URI) testContext.getSuite().getAttribute(SuiteAttribute.API_DEFINITION.getName());
-	   
-        
     }
 
     /*@BeforeMethod
@@ -163,18 +156,14 @@ public class CommonFixture {
 	
     // from https://mkyong.com/java/how-to-convert-inputstream-to-string-in-java/
     public String convertInputStreamToString(InputStream is) throws IOException {
-
         ByteArrayOutputStream result = new ByteArrayOutputStream();
         byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
         int length;
+
         while ((length = is.read(buffer)) != -1) {
             result.write(buffer, 0, length);
         }
 
-
-
         return result.toString("UTF-8");
-
-
     }		
 }

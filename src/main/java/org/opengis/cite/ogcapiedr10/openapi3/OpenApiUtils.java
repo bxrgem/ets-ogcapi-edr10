@@ -2,12 +2,14 @@ package org.opengis.cite.ogcapiedr10.openapi3;
 
 import static org.opengis.cite.ogcapiedr10.openapi3.OpenApiUtils.PATH.COLLECTIONS;
 import static org.opengis.cite.ogcapiedr10.openapi3.OpenApiUtils.PATH.CONFORMANCE;
+import static org.opengis.cite.ogcapiedr10.util.URIUtils.appendFormatToURI;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -16,25 +18,18 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 //swagger imports
+import io.swagger.v3.parser.OpenAPIV3Parser;
+import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.responses.ApiResponse;
-import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.servers.Server;
 
-
-// import com.reprezen.kaizen.oasparser.model3.MediaType;
-// import com.reprezen.kaizen.oasparser.model3.OpenApi3;
-// import com.reprezen.kaizen.oasparser.model3.Operation;
-// import com.reprezen.kaizen.oasparser.model3.Parameter;
-// import com.reprezen.kaizen.oasparser.model3.Path;
-// import com.reprezen.kaizen.oasparser.model3.Response;
-// import com.reprezen.kaizen.oasparser.model3.Schema;
-// import com.reprezen.kaizen.oasparser.model3.Server;
 import com.sun.jersey.api.uri.UriTemplate;
 import com.sun.jersey.api.uri.UriTemplateParser;
 
@@ -47,38 +42,95 @@ public class OpenApiUtils {
 	// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#fixed-fields
 	private static final String DEFAULT_SERVER_URL = "/";
 
+	private static String baseUri = null;
+
+	synchronized public static void setBaseUri(OpenAPI openapi, URI iut) {
+		if (baseUri != null) {
+			return;
+		}
+
+		List<Server> servers = openapi.getServers();
+		if (servers == null || servers.isEmpty()) {
+			baseUri = "";
+			return;
+		}
+
+		Server server = servers.get(0);
+		String iutPath = iut.getPath();
+		String serverPath = URI.create(server.getUrl()).getPath();
+
+		baseUri = "";
+		if (iutPath.startsWith(serverPath)) {
+			baseUri = iutPath.substring(serverPath.length());
+		}
+	}
+
+	synchronized public static String getBaseUri() {
+		return baseUri;
+	}
+
 	@FunctionalInterface
 	private interface PathMatcherFunction<A, B, C> {
 		A apply(B b, C c);
 	}
 
-	enum PATH {
+	public static List<Path> getPaths(OpenAPI openApi) {
+		LinkedList<Path> paths = new LinkedList<>();
+		for (Map.Entry<String, PathItem> entry : openApi.getPaths().entrySet()) {
+			paths.add(new Path(entry.getKey(), entry.getValue()));
+		}
+		return paths;
+	}
 
-		CONFORMANCE("conformance"), COLLECTIONS("collections");
+	public static Path getPath(OpenAPI openApi, String path) {
+		Paths paths = openApi.getPaths();
+		if (paths == null) {
+			return null;
+		}
+
+		PathItem pathItem = paths.get(path);
+		if (pathItem != null) {
+			return new Path(path, pathItem);
+		}
+		return null;
+	}
+
+	enum PATH {
+		CONFORMANCE("conformance"),
+		COLLECTIONS("collections");
 
 		private String pathItem;
 
 		PATH(String pathItem) {
-
 			this.pathItem = pathItem;
 		}
 
-		private String getPathItem() {
-			return pathItem;
+		public String getPathItem() {
+			String base = getBaseUri();
+			if (base == null || base.isEmpty()) {
+				return pathItem;
+			}
+			return base + "/" + pathItem;
 		}
+
 	}
 
 	private static class PathMatcher implements PathMatcherFunction<Boolean, String, String> {
+		private PathMatcher() {
+		}
+
 		@Override
 		public Boolean apply(String pathUnderTest, String pathToMatch) {
+			// System.err.println(" PathMatcher.apply: pathUnderTest = " + pathUnderTest +
+			// ", pathToMatch = " + pathToMatch);
 			UriTemplateParser parser = new UriTemplateParser(pathUnderTest);
+			// System.err.println(" template: " + parser.getTemplate());
 			Matcher matcher = parser.getPattern().matcher(pathToMatch);
 			return matcher.matches();
 		}
 	}
 
 	private static class ExactMatchFilter implements Predicate<TestPoint> {
-
 		private final String requestedPath;
 
 		ExactMatchFilter(String requestedPath) {
@@ -103,6 +155,63 @@ public class OpenApiUtils {
 	private OpenApiUtils() {
 	}
 
+	static public OpenAPI retrieveApiModel(URI modelUri) {
+		OpenAPIV3Parser parser = new OpenAPIV3Parser();
+		SwaggerParseResult result;
+		OpenAPI apiModel = null;
+
+		modelUri = appendFormatToURI(modelUri);
+
+		try {
+
+			result = parser.readLocation(modelUri.toURL().toString(), null, null);
+
+			if (result.getOpenAPI() == null || result.getMessages() == null || result.getMessages().size() > 0) {
+				modelUri = new URI(modelUri.toString().replace("application/json", "json"));
+
+				if (result.getOpenAPI() == null) {
+					System.err.println(" API Definition: parse error: '" + modelUri.toURL().toString() + "'");
+					System.err.println(" API Definition: retry with 'Content-Type: json'" + modelUri.toURL().toString() + "'");
+				} else {
+					System.err.println(" API Definition: parse warnings: '" + modelUri.toURL().toString() + "'");
+				}
+				if (result.getMessages() != null) {
+					for (String mesage : result.getMessages()) {
+						System.err.println(" -- " + mesage);
+					}
+				}
+
+				result = parser.readLocation(modelUri.toURL().toString(), null, null);
+			}
+
+			apiModel = result.getOpenAPI();
+
+			if (apiModel == null) {
+				System.err.println("API Definition: parse errors '" + modelUri.toURL().toString() + "'");
+				if (result.getMessages() != null && result.getMessages().size() > 0) {
+					for (String message : result.getMessages()) {
+						System.err.println("  -- " + message);
+					}
+				}
+			} else if (result.getMessages() != null && result.getMessages().size() > 0) {
+				System.err.println("API Definition: parse warnings '" + modelUri.toURL().toString() + "'");
+				for (String message : result.getMessages()) {
+					System.err.println("  -- " + message);
+				}
+			}
+		} catch (Exception ed) {
+			try {
+				modelUri = new URI(modelUri.toString().replace("application/json", "json"));
+				// System.err.println("retrieveApiModel (3): '" + modelUri.toURL().toString() +
+				// "'");
+				result = parser.readLocation(modelUri.toURL().toString(), null, null);
+				apiModel = result.getOpenAPI();
+			} catch (Exception ignored) {
+			}
+		}
+		return apiModel;
+	}
+
 	/**
 	 * Parse all test points from the passed OpenAPI document as described in
 	 * A.4.3. Identify the Test Points.
@@ -112,11 +221,9 @@ public class OpenApiUtils {
 	 * @return the parsed test points, may be empty but never <code>null</code>
 	 */
 	static List<TestPoint> retrieveTestPoints(OpenAPI apiModel, URI iut) {
-      
 		List<Path> pathItemObjects = identifyTestPoints(apiModel);
-
 		List<PathItemAndServer> pathItemAndServers = identifyServerUrls(apiModel, iut, pathItemObjects);
-	
+
 		return processServerObjects(pathItemAndServers, true);
 	}
 
@@ -141,6 +248,9 @@ public class OpenApiUtils {
 	 * @return the parsed test points, may be empty but never <code>null</code>
 	 */
 	public static List<TestPoint> retrieveTestPointsForCollectionsMetadata(OpenAPI apiModel, URI iut) {
+		// System.err.println(
+		// " @@@@@@ retrieveTestPointsForCollectionsMetadata: iut:" + iut.toString() + "
+		// PATH: " + COLLECTIONS.getPathItem());
 		return retrieveTestPoints(apiModel, iut, COLLECTIONS, false);
 	}
 
@@ -181,33 +291,25 @@ public class OpenApiUtils {
 	 */
 	public static List<TestPoint> retrieveTestPointsForCollections(OpenAPI apiModel, URI iut, int noOfCollection) {
 
-		String[] resources = { "locations", "position", "radius", "area", "trajectory" }; 
-		 
-		
-	
+		String[] resources = { "locations", "position", "radius", "area", "trajectory" };
+
 		List<TestPoint> allTestPoints = new ArrayList<TestPoint>();
 
 		try {
-		for (String res : resources) {
-			StringBuilder requestedPath = new StringBuilder();
-			requestedPath.append("/");
-			requestedPath.append(COLLECTIONS.getPathItem());
-			requestedPath.append("/.*/"+res);
+			for (String res : resources) {
+				StringBuilder requestedPath = new StringBuilder();
+				requestedPath.append("/");
+				requestedPath.append(COLLECTIONS.getPathItem());
+				requestedPath.append("/.*/" + res);
 
+				boolean r = allTestPoints
+						.addAll(retrieveTestPoints(apiModel, iut, requestedPath.toString(), (a, b) -> a.matches(b), true));
 
+			}
+		} catch (Exception er) {
 
-			boolean r = allTestPoints
-					.addAll(retrieveTestPoints(apiModel, iut, requestedPath.toString(), (a, b) -> a.matches(b), true));
-			
-	
-		}
-		}
-		catch(Exception er)
-		{
-	
 			er.printStackTrace();
 		}
-		
 
 		if (noOfCollection < 0 || allTestPoints.size() <= noOfCollection) {
 			return allTestPoints;
@@ -259,16 +361,36 @@ public class OpenApiUtils {
 	}
 
 	public static Parameter retrieveParameterByName(String collectionItemPath, OpenAPI apiModel, String name) {
-		Path path = apiModel.getPath(collectionItemPath);
-		if (path != null) {
-			for (Parameter parameter : path.getParameters())
-				if (name.equals(parameter.getName()))
-					return parameter;
-			Operation get = path.getOperation("get");
-			for (Parameter parameter : get.getParameters())
-				if (name.equals(parameter.getName()))
-					return parameter;
+		Path path = getPath(apiModel, collectionItemPath);
+
+		if (path == null) {
+			return null;
 		}
+
+		List<Parameter> params = path.pathItem().getParameters();
+
+		if (params != null) {
+			for (Parameter parameter : params) {
+				if (name.equals(parameter.getName())) {
+					return parameter;
+				}
+			}
+		}
+
+		Operation get = path.pathItem().getGet();
+		if (get == null) {
+			return null;
+		}
+
+		params = get.getParameters();
+		if (params != null) {
+			for (Parameter parameter : params) {
+				if (name.equals(parameter.getName())) {
+					return parameter;
+				}
+			}
+		}
+
 		return null;
 	}
 
@@ -277,9 +399,16 @@ public class OpenApiUtils {
 
 		List<Path> paths = identifyTestPoints(apiModel, requestedPath, new PathMatcher());
 		for (Path path : paths) {
-			Collection<Parameter> parameters = path.getGet().getParameters();
+			Operation get = path.pathItem().getGet();
+			if (get == null) {
+				continue;
+			}
+
+			Collection<Parameter> parameters = get.getParameters();
 			for (Parameter parameter : parameters) {
-				if (parameter.getSchema() != null && parameter.getSchema().isAdditionalProperties()) {
+				// TODO: check if getAdditionalProperties() != null is enough to determine if
+				// there is not defined additional properties.
+				if (parameter.getSchema() != null && parameter.getSchema().getAdditionalProperties() != null) {
 					return true;
 				}
 			}
@@ -293,7 +422,12 @@ public class OpenApiUtils {
 
 		List<Path> paths = identifyTestPoints(apiModel, requestedPath, new PathMatcher());
 		for (Path path : paths) {
-			Collection<Parameter> parameters = path.getGet().getParameters();
+			Operation get = path.pathItem().getGet();
+			if (get == null) {
+				continue;
+			}
+
+			Collection<Parameter> parameters = get.getParameters();
 			for (Parameter parameter : parameters) {
 				if (queryParam.equalsIgnoreCase(parameter.getName())) {
 					return true;
@@ -327,6 +461,12 @@ public class OpenApiUtils {
 	private static List<TestPoint> retrieveTestPoints(OpenAPI apiModel, URI iut, String requestedPath,
 			PathMatcherFunction<Boolean, String, String> pathMatcher, boolean allowEmptyTemplateReplacements) {
 		List<Path> pathItemObjects = identifyTestPoints(apiModel, requestedPath, pathMatcher);
+
+		// System.err.println(" @@@@@ retrieveTestPoints (" + requestedPath + "): paths:
+		// size: " + pathItemObjects.size());
+		for (Path p : pathItemObjects) {
+			System.err.println("       path: " + p.getPathString());
+		}
 		List<PathItemAndServer> pathItemAndServers = identifyServerUrls(apiModel, iut, pathItemObjects);
 		return processServerObjects(pathItemAndServers, allowEmptyTemplateReplacements);
 	}
@@ -358,7 +498,7 @@ public class OpenApiUtils {
 	 * @param apiModel never <code>null</code>
 	 */
 	private static List<Path> identifyTestPoints(OpenAPI apiModel) {
-		List<Path> allTestPoints = new ArrayList<>();
+		List<Path> allTestPoints = new LinkedList<>();
 		for (PATH path : PATH.values())
 			allTestPoints.addAll(identifyTestPoints(apiModel, "/" + path.getPathItem(), new PathMatcher()));
 		return allTestPoints;
@@ -366,12 +506,15 @@ public class OpenApiUtils {
 
 	private static List<Path> identifyTestPoints(OpenAPI apiModel, String path,
 			PathMatcherFunction<Boolean, String, String> pathMatch) {
-		List<Path> pathItems = new ArrayList<>();
-		Map<String, Path> pathItemObjects = apiModel.getPaths();
-		for (Path pathItemObject : pathItemObjects.values()) {
-			String pathString = pathItemObject.getPathString();
-			if (pathMatch.apply(pathString, path)) {
-				pathItems.add(pathItemObject);
+		List<Path> pathItems = new LinkedList<>();
+		List<Path> paths = getPaths(apiModel);
+		// System.err.println(" @@@@@ identifyTestPoints (" + path + "): paths: size: "
+		// + paths.size());
+		for (Path pathItem : paths) {
+			// System.err.println(" pathItem: " + pathItem.getPathString());
+			if (pathMatch.apply(pathItem.path(), path)) {
+				// System.err.println(" pathItem (add): " + pathItem.getPathString());
+				pathItems.add(pathItem);
 			}
 		}
 		return pathItems;
@@ -426,13 +569,15 @@ public class OpenApiUtils {
 	 * @param iut             never <code>null</code>
 	 * @param pathItemObjects never <code>null</code>
 	 */
-	private static List<PathItemAndServer> identifyServerUrls(OpenAPI apiModel, URI iut, List<Path> pathItemObjects) {
+
+	private static List<PathItemAndServer> identifyServerUrls(OpenAPI apiModel,
+			URI iut, List<Path> pathItemObjects) {
 		List<PathItemAndServer> pathItemAndServers = new ArrayList<>();
 
 		for (Path pathItemObject : pathItemObjects) {
-			Map<String, Operation> operationObjects = pathItemObject.getOperations();
-			for (Operation operationObject : operationObjects.values()) {
-				List<String> serverUrls = identifyServerObjects(apiModel, pathItemObject, operationObject);
+			for (Operation operationObject : pathItemObject.getOperations()) {
+				List<String> serverUrls = identifyServerObjects(apiModel, pathItemObject,
+						operationObject);
 				for (String serverUrl : serverUrls) {
 					if (DEFAULT_SERVER_URL.equalsIgnoreCase(serverUrl)) {
 						serverUrl = iut.toString();
@@ -440,7 +585,8 @@ public class OpenApiUtils {
 						URI resolvedUri = iut.resolve(serverUrl);
 						serverUrl = resolvedUri.toString();
 					}
-					PathItemAndServer pathItemAndServer = new PathItemAndServer(pathItemObject, operationObject,
+					PathItemAndServer pathItemAndServer = new PathItemAndServer(pathItemObject,
+							operationObject,
 							serverUrl);
 					pathItemAndServers.add(pathItemAndServer);
 				}
@@ -504,10 +650,10 @@ public class OpenApiUtils {
 	private static void processServerObject(List<TestPoint> uris, PathItemAndServer pathItemAndServer,
 			boolean allowEmptyTemplateReplacements) {
 		String pathString = pathItemAndServer.pathItemObject.getPathString();
-		Response response = getResponse(pathItemAndServer);
+		ApiResponse response = getResponse(pathItemAndServer);
 		if (response == null)
 			return;
-		Map<String, MediaType> contentMediaTypes = response.getContentMediaTypes();
+		Map<String, MediaType> contentMediaTypes = response.getContent();
 
 		UriTemplate uriTemplate = new UriTemplate(pathItemAndServer.serverUrl + pathString);
 		if (uriTemplate.getNumberOfTemplateVariables() == 0) {
@@ -530,11 +676,13 @@ public class OpenApiUtils {
 		}
 	}
 
-	private static Response getResponse(PathItemAndServer pathItemAndServer) {
-		if (pathItemAndServer.operationObject.hasResponse("200"))
-			return pathItemAndServer.operationObject.getResponse("200");
-		if (pathItemAndServer.operationObject.hasResponse("default"))
-			return pathItemAndServer.operationObject.getResponse("default");
+	private static ApiResponse getResponse(PathItemAndServer pathItemAndServer) {
+		ApiResponse response = pathItemAndServer.hasResponse("200");
+		if (response != null)
+			return response;
+		response = pathItemAndServer.hasResponse("default");
+		if (response != null)
+			return response;
 		return null;
 	}
 
@@ -546,7 +694,7 @@ public class OpenApiUtils {
 			for (Parameter parameter : parameters) {
 				if (templateVariable.equals(parameter.getName())) {
 					Schema schema = parameter.getSchema();
-					if (schema.hasEnums()) {
+					if (schema.getEnum() != null) {
 						addEnumTemplateValues(templateReplacements, templateVariable, schema);
 					} else if (schema.getDefault() != null) {
 						addDefaultTemplateValue(templateReplacements, templateVariable, schema);
@@ -563,7 +711,7 @@ public class OpenApiUtils {
 
 	private static void addEnumTemplateValues(List<Map<String, String>> templateReplacements, String templateVariable,
 			Schema schema) {
-		Collection<Object> enums = schema.getEnums();
+		Collection<Object> enums = schema.getEnum();
 		if (enums.size() == 1) {
 			for (Object enumValue : enums) {
 				Map<String, String> replacement = new HashMap<>();
@@ -602,12 +750,18 @@ public class OpenApiUtils {
 
 	private static List<String> identifyServerObjects(OpenAPI apiModel, Path pathItemObject,
 			Operation operationObject) {
-		if (operationObject.hasServers())
-			return parseUrls(operationObject.getServers());
-		if (pathItemObject.hasServers())
-			return parseUrls(pathItemObject.getServers());
-		if (apiModel.hasServers())
-			return parseUrls(apiModel.getServers());
+		List<Server> servers = operationObject.getServers();
+		if (servers != null && !servers.isEmpty())
+			return parseUrls(servers);
+
+		servers = pathItemObject.pathItem().getServers();
+		if (servers != null && !servers.isEmpty())
+			return parseUrls(servers);
+
+		servers = apiModel.getServers();
+		if (servers != null && !servers.isEmpty())
+			return parseUrls(servers);
+
 		return Collections.singletonList(DEFAULT_SERVER_URL);
 	}
 
@@ -619,13 +773,15 @@ public class OpenApiUtils {
 	}
 
 	private static class PathItemAndServer {
-
 		private final Path pathItemObject;
-
 		private Operation operationObject;
 
 		// TODO: must be a server object to consider server variables
 		private String serverUrl;
+
+		ApiResponse hasResponse(String responseName) {
+			return operationObject.getResponses().get(responseName);
+		}
 
 		private PathItemAndServer(Path pathItemObject, Operation operationObject, String serverUrl) {
 			this.pathItemObject = pathItemObject;
